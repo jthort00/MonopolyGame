@@ -1,3 +1,5 @@
 # Monopoly  
 ##  Tags:   
-    VersionInicial
+    V1
+##  Video:
+    Not ready
