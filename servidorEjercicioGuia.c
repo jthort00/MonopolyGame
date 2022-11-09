@@ -442,7 +442,7 @@ int main(int argc, char *argv[])
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// escucharemos en el port 9050
-	serv_adr.sin_port = htons(9087);
+	serv_adr.sin_port = htons(9060);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind");
 	//La cola de peticiones pendientes no podr? ser superior a 4
@@ -458,56 +458,71 @@ int main(int argc, char *argv[])
 		//sock_conn es el socket que usaremos para este cliente
 		
 		// Ahora recibimos su peticion
-		ret=read(sock_conn,peticion, sizeof(peticion));
-		printf ("Recibida una petición\n");
-		// Tenemos que añadirle la marca de fin de string 
-		// para que no escriba lo que hay despues en el buffer
-		peticion[ret]='\0';
-		
-		//Escribimos la peticion en la consola
-		
-		printf ("La petición es: %s\n",peticion);
-		char *p = strtok(peticion, "/");
-		int codigo =  atoi (p);
-		p = strtok( NULL, "/");
-		char nombre[512];
-		strcpy (nombre, p);
-		printf ("Codigo: %d, Nombre: %s\n", codigo, nombre);
-		
-		if (codigo ==1) { //piden añadir nuevo usuario a la base de datos
-			int add = NewAccount(nombre);
-			sprintf(respuesta, "%d", add);
-			write (sock_conn,respuesta, strlen(respuesta));
-			close(sock_conn);
+		int h = 0;
+		while (h==0){
+			printf ("Escuchando \n");
+			ret=read(sock_conn,peticion, sizeof(peticion));
+			printf ("Recibida una petición\n");
+			// Tenemos que añadirle la marca de fin de string 
+			// para que no escriba lo que hay despues en el buffer
+			peticion[ret]='\0';
 			
-		}
-		
-		if (codigo ==2) { //piden iniciar sesión 
-			int signup = SignUp(nombre);
-			sprintf(respuesta, "%d", signup);
-			write (sock_conn,respuesta, strlen(respuesta));
-			close(sock_conn);
+			//Escribimos la peticion en la consola
 			
-		}
-		
-		if (codigo ==3) { //piden crear una partida 
-			char* createdata = CreateGame(nombre);
-			strcpy(respuesta, createdata);
-			printf("respuesta = %s\n", respuesta);
-			write (sock_conn,respuesta, strlen(respuesta));
-			close(sock_conn);
+			printf ("La petición es: %s\n",peticion);
 			
-		}
-		
-		if (codigo ==4) { //piden saber en que partidas estan  
-			char* getdata = GetGames(nombre);
-			strcpy(respuesta, getdata);
-			printf("respuesta = %s\n", respuesta);
-			write (sock_conn,respuesta, strlen(respuesta));
-			close(sock_conn);
+			char *p = strtok(peticion, "/");
+			int codigo =  atoi (p);
+			p = strtok( NULL, "/");
+			char nombre[512];
+			strcpy (nombre, p);
+			printf ("Codigo: %d, Nombre: %s\n", codigo, nombre);
 			
+			if (codigo ==0) { //piden cerrar conexión
+
+				close(sock_conn);
+				h=1;
+				
+			}
+			
+			if (codigo ==1) { //piden añadir nuevo usuario a la base de datos
+				int add = NewAccount(nombre);
+				sprintf(respuesta, "%d", add);
+				write (sock_conn,respuesta, strlen(respuesta));
+				printf("%s\n", respuesta);
+				//close(sock_conn);
+				
+			}
+			
+			if (codigo ==2) { //piden iniciar sesión 
+				int signup = SignUp(nombre);
+				sprintf(respuesta, "%d", signup);
+				write (sock_conn,respuesta, strlen(respuesta));
+				printf("%s\n", respuesta);
+				//close(sock_conn);
+				
+			}
+			
+			if (codigo ==3) { //piden crear una partida 
+				char* createdata = CreateGame(nombre);
+				strcpy(respuesta, createdata);
+				printf("respuesta = %s\n", respuesta);
+				write (sock_conn,respuesta, strlen(respuesta));
+				printf("%s\n", respuesta);
+				//close(sock_conn);
+				
+			}
+			
+			if (codigo ==4) { //piden saber en que partidas estan  
+				char* getdata = GetGames(nombre);
+				strcpy(respuesta, getdata);
+				printf("respuesta = %s\n", respuesta);
+				write (sock_conn,respuesta, strlen(respuesta));
+				printf("%s\n", respuesta);
+				//close(sock_conn);
+				
+			}
 		}
-		
 			 
 
 	}
