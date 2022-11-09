@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
 {
     public partial class Form2 : Form
     {
-        Socket server;
+        public Socket server;
 
         public Form2()
         {
@@ -31,14 +31,14 @@ namespace WindowsFormsApplication1
                 {
 
 
-                    IPAddress direc = IPAddress.Parse("192.168.56.102");
-                    IPEndPoint ipep = new IPEndPoint(direc, 9087);
+                    //IPAddress direc = IPAddress.Parse("192.168.56.102");
+                    //IPEndPoint ipep = new IPEndPoint(direc, 9087);
 
-                    server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    //server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                     try
                     {
-                        server.Connect(ipep);//Intentamos conectar el socket
+                        //server.Connect(ipep);//Intentamos conectar el socket
                         this.BackColor = Color.Green;
 
                         string mensaje = "1/" + textBox1.Text + "$" + textBox2.Text + "$" + numericUpDown1.Value;
@@ -64,8 +64,8 @@ namespace WindowsFormsApplication1
                             Close();
                         }
 
-                        server.Shutdown(SocketShutdown.Both);
-                        server.Close();
+                        //server.Shutdown(SocketShutdown.Both);
+                        //server.Close();
 
 
 

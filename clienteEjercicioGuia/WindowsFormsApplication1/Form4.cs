@@ -13,7 +13,7 @@ namespace WindowsFormsApplication1
 {
     public partial class Form4 : Form
     {
-        Socket server;
+        public Socket server1;
         public string username;
         public Form4()
         {
@@ -25,59 +25,40 @@ namespace WindowsFormsApplication1
         private void Form4_Load(object sender, EventArgs e)
         {
             label1.Text = "Welcome " + this.username;
+            string mensaje = "4/" + username;
+            byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+            server1.Send(msg);
 
-            IPAddress direc = IPAddress.Parse("192.168.56.102");
-            IPEndPoint ipep = new IPEndPoint(direc, 9087);
-
-            server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-            try
-            {
-                server.Connect(ipep);//Intentamos conectar el socket
-
-                string mensaje = "4/" + username;
-                byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
-                server.Send(msg);
-
-                //Recibimos la respuesta del servidor
-                byte[] msg2 = new byte[800];
-                server.Receive(msg2);
-                mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
+            //Recibimos la respuesta del servidor
+            byte[] msg2 = new byte[800];
+            server1.Receive(msg2);
+            mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
          
-                if (mensaje != "-1")
-                {
-                    string[] parts = mensaje.Split('$');
-                    int i = 0;
-                    while (i+1 < parts.Length)
-                    {
-                        string[] parts1 = parts[i].Split('/');
-                        if (parts1[3] == "0")
-                            parts1[3] = "No";
-
-                        string[] row0 = { parts1[0], parts1[2], parts1[1], parts1[3], parts1[4] };
-                        dataGridView1.Rows.Add(row0);
-                        i = i + 1;
-                  
-                    }
-                }
-
-
-
-                server.Shutdown(SocketShutdown.Both);
-                server.Close();
-            }
-            catch (SocketException)
+            if (mensaje != "-1")
             {
-                //Si hay excepcion imprimimos error y salimos del programa con return 
-                MessageBox.Show("No he podido conectar con el servidor");
-                return;
-            }
+                string[] parts = mensaje.Split('$');
+                int i = 0;
+                while (i+1 < parts.Length)
+                {
+                    string[] parts1 = parts[i].Split('/');
+                    if (parts1[3] == "0")
+                        parts1[3] = "No";
 
+                    string[] row0 = { parts1[0], parts1[2], parts1[1], parts1[3], parts1[4] };
+                    dataGridView1.Rows.Add(row0);
+                    i = i + 1;
+                  
+                }
+            }
+            else
+            {
+                MessageBox.Show("No games");
+            }
+                
 
         }
 
         
-
         private void dataGridView1_CellMouseUp(object sender, DataGridViewCellMouseEventArgs e)
         {
             int index = dataGridView1.CurrentCell.RowIndex;
@@ -88,43 +69,22 @@ namespace WindowsFormsApplication1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            IPAddress direc = IPAddress.Parse("192.168.56.102");
-            IPEndPoint ipep = new IPEndPoint(direc, 9087);
+           
+            string mensaje = "3/" + username;
+            byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+            server1.Send(msg);
 
-            server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            //Recibimos la respuesta del servidor
+            byte[] msg2 = new byte[80];
+            server1.Receive(msg2);
+            mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
+            string[] parts = mensaje.Split('/');
+            if (parts[3] == "0")
+                parts[3] = "No";
 
-            try
-            {
-                server.Connect(ipep);//Intentamos conectar el socket
-
-                string mensaje = "3/" + username;
-                byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
-                server.Send(msg);
-
-                //Recibimos la respuesta del servidor
-                byte[] msg2 = new byte[80];
-                server.Receive(msg2);
-                mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
-                string[] parts = mensaje.Split('/');
-                if (parts[3] == "0")
-                    parts[3] = "No";
-
-                string[] row0 = { parts[0], parts[2], parts[1], parts[3], parts[4]};
-                dataGridView1.Rows.Add(row0);
-
-
-
-
-                server.Shutdown(SocketShutdown.Both);
-                server.Close();
-            }
-            catch (SocketException)
-            {
-                //Si hay excepcion imprimimos error y salimos del programa con return 
-                MessageBox.Show("No he podido conectar con el servidor");
-                return;
-            }
-
+            string[] row0 = { parts[0], parts[2], parts[1], parts[3], parts[4]};
+            dataGridView1.Rows.Add(row0); 
+            
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -134,7 +94,10 @@ namespace WindowsFormsApplication1
 
         private void button3_Click(object sender, EventArgs e)
         {
+       
             Form1 form1 = new Form1();
+            form1.server = this.server1;
+            form1.BackColor = Color.Green;
             form1.Show();
             this.Close();
            
