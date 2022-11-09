@@ -94,13 +94,30 @@ namespace WindowsFormsApplication1
 
         private void button3_Click(object sender, EventArgs e)
         {
-       
-            Form1 form1 = new Form1();
-            form1.server = this.server1;
-            form1.BackColor = Color.Green;
-            form1.Show();
-            this.Close();
-           
+            string mensaje = "6/" + username;
+            byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+            server1.Send(msg);
+
+            //Recibimos la respuesta del servidor
+            byte[] msg2 = new byte[80];
+            server1.Receive(msg2);
+            mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
+
+            if (mensaje == "0")
+            {
+                Form1 form1 = new Form1();
+                form1.server = this.server1;
+                form1.BackColor = Color.Green;
+                form1.Show();
+                this.Close();
+            }
+
+            else
+                MessageBox.Show("Error logging out");
+
+
+            
+          
 
         }
     }
