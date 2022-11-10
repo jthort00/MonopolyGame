@@ -23,6 +23,8 @@ typedef struct {
 	ListOnline* onlinelist;
 } TParam;
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 int AddOnline (ListOnline *list, char name[20], int socket){
 	if (list->num == 100)
 		return -1;
@@ -537,7 +539,9 @@ void *AtenderCliente (TParam *par)
 			sprintf(respuesta, "%d", signup);
 			write (sock_conn,respuesta, strlen(respuesta));
 			printf("%s\n", respuesta);
+			pthread_mutex_lock (&mutex);
 			AddOnline(par->onlinelist, nombre, 12);
+			pthread_mutex_unlock (&mutex);
 			//close(sock_conn);
 			
 		}
@@ -568,8 +572,10 @@ void *AtenderCliente (TParam *par)
 			
 		}
 		
-		if (codigo ==6) { //Obtener la lista de conectados 
+		if (codigo ==6) { //Salir de la lista de conectados 
+			pthread_mutex_lock (&mutex);
 			int res = DeleteOnline (par->onlinelist, nombre);
+			pthread_mutex_unlock (&mutex);
 			sprintf(respuesta, "%d", res);
 			write (sock_conn, respuesta, strlen(respuesta)); 
 			
@@ -626,38 +632,6 @@ int main(int argc, char *argv[])
 		i=i+1;
 	}
 	
-	//Lista de conectados
-	
-	
-	
-	//int res = AddOnline(&mylist, "Juan", 5);
-/*	AddOnline(&mylist, "Maria", 14);*/
-/*	AddOnline(&mylist, "Carlos", 30);*/
-/*	if (res == -1)*/
-/*		printf("Lista llena\n");*/
-/*	else*/
-/*		printf("Añadido bien.\n");*/
-/*	int pos = GetPosition (&mylist, "Pedro");*/
-/*	if (socket != -1)*/
-/*		printf("El socket de Pedro es: %d\n", mylist.online_users[pos].socket);*/
-/*	else*/
-/*		printf("Ese usuario no esta en la lista\n");*/
-	
-/*	res = DeleteOnline (&mylist, "Juan");*/
-/*	if (res ==-1)*/
-/*		printf ("No està \n");*/
-/*	else*/
-/*		printf("ELiminado\n");*/
-	
-/*	pos = GetPosition (&mylist, "Juan");*/
-/*	if (socket != -1)*/
-/*		printf("El socket de Juan es: %d\n", mylist.online_users[pos].socket);*/
-/*	else*/
-/*		printf("Ese usuario no esta en la lista\n");*/
-	
-/*	char online[300];*/
-/*	GetOnline (&mylist, online);*/
-/*	printf ("Resultado: %s\n", online);*/
 	return 0;
 }
 	
