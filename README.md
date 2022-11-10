@@ -1,8 +1,8 @@
 # Monopoly  
-##  V3  
-    V3 Generada por: Jordi
-    V3 Revisada por: Ivan
-    V3 Video por: Andrea
+##  V2  
+    V2 Generada por: Jordi
+    V2 Revisada por: Ivan
+    V2 Video por: Andrea
     URL del video: -
 
 
