@@ -4,7 +4,7 @@
     V2 Revisada por: Ivan
     V2 Vídeo por: Andrea
     URL del vídeo: https://youtu.be/SA2j7X3XC-k
-    URL del vídeo (Interfaz gráfica): https://www.youtube.com/watch?v=IMkamHf6m4o
+    URL del vídeo (Interfaz gráfica): https://youtu.be/IMkamHf6m4o
 
 
 ##  V1  
