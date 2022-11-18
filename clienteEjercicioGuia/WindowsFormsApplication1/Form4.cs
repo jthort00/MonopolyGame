@@ -15,6 +15,8 @@ namespace WindowsFormsApplication1
     {
         public Socket server1;
         public string username;
+  
+        
         public Form4()
         {
             InitializeComponent();
@@ -24,37 +26,13 @@ namespace WindowsFormsApplication1
 
         private void Form4_Load(object sender, EventArgs e)
         {
+         
             label1.Text = "Welcome " + this.username;
             string mensaje = "4/" + username;
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
-            server1.Send(msg);
-
-            //Recibimos la respuesta del servidor
-            byte[] msg2 = new byte[800];
-            server1.Receive(msg2);
-            mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
-         
-            if (mensaje != "-1")
-            {
-                string[] parts = mensaje.Split('$');
-                int i = 0;
-                while (i+1 < parts.Length)
-                {
-                    string[] parts1 = parts[i].Split('/');
-                    if (parts1[3] == "0")
-                        parts1[3] = "No";
-
-                    string[] row0 = { parts1[0], parts1[2], parts1[1], parts1[3], parts1[4] };
-                    dataGridView1.Rows.Add(row0);
-                    i = i + 1;
-                  
-                }
-            }
-            else
-            {
-                MessageBox.Show("No games");
-            }
-                
+            //server1.Send(msg);
+            
+            
 
         }
 
@@ -73,17 +51,7 @@ namespace WindowsFormsApplication1
             string mensaje = "3/" + username;
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
             server1.Send(msg);
-
-            //Recibimos la respuesta del servidor
-            byte[] msg2 = new byte[80];
-            server1.Receive(msg2);
-            mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
-            string[] parts = mensaje.Split('/');
-            if (parts[3] == "0")
-                parts[3] = "No";
-
-            string[] row0 = { parts[0], parts[2], parts[1], parts[3], parts[4]};
-            dataGridView1.Rows.Add(row0); 
+                     
             
         }
 
@@ -97,27 +65,6 @@ namespace WindowsFormsApplication1
             string mensaje = "6/" + username;
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
             server1.Send(msg);
-
-            //Recibimos la respuesta del servidor
-            byte[] msg2 = new byte[80];
-            server1.Receive(msg2);
-            mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
-
-            if (mensaje == "0")
-            {
-                Form1 form1 = new Form1();
-                form1.server = this.server1;
-                form1.BackColor = Color.Green;
-                form1.Show();
-                this.Close();
-            }
-
-            else
-                MessageBox.Show("Error logging out");
-
-
-            
-          
 
         }
     }

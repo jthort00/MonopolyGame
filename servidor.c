@@ -25,6 +25,9 @@ typedef struct {
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+int ii = 0;
+int sockets[100];
+
 int AddOnline (ListOnline *list, char name[20], int socket){
 	if (list->num == 100)
 		return -1;
@@ -496,6 +499,7 @@ void *AtenderCliente (TParam *par)
 	
 	char peticion[512];
 	char respuesta[512];
+	char respuesta1[512];
 	int ret;
 	
 	int end = 0;
@@ -527,7 +531,7 @@ void *AtenderCliente (TParam *par)
 		
 		if (codigo ==1) { //piden añadir nuevo usuario a la base de datos
 			int add = NewAccount(nombre);
-			sprintf(respuesta, "%d", add);
+			sprintf(respuesta, "1?%d", add);
 			write (sock_conn,respuesta, strlen(respuesta));
 			printf("%s\n", respuesta);
 			//close(sock_conn);
@@ -536,20 +540,28 @@ void *AtenderCliente (TParam *par)
 		
 		if (codigo ==2) { //piden iniciar sesión 
 			int signup = SignUp(nombre);
-			sprintf(respuesta, "%d", signup);
+			sprintf(respuesta, "2?%d", signup);
 			write (sock_conn,respuesta, strlen(respuesta));
 			printf("%s\n", respuesta);
 			pthread_mutex_lock (&mutex);
 			AddOnline(par->onlinelist, nombre, 12);
 			pthread_mutex_unlock (&mutex);
+			//GetOnline (par->onlinelist, respuesta1);
+			//sprintf(respuesta, "5?%s", respuesta1);
+			//if (signup == 1)
+			{
+				//int j;
+				//for (j=0; j<ii;j++)
+					//write (sockets[j], respuesta, strlen(respuesta));
+			}
 			//close(sock_conn);
 			
 		}
 		
 		if (codigo ==3) { //piden crear una partida 
 			char* createdata = CreateGame(nombre);
-			strcpy(respuesta, createdata);
-			printf("respuesta = %s\n", respuesta);
+			strcpy(respuesta1, createdata);
+			sprintf(respuesta, "3?%s", respuesta1);
 			write (sock_conn,respuesta, strlen(respuesta));
 			printf("%s\n", respuesta);
 			//close(sock_conn);
@@ -558,8 +570,8 @@ void *AtenderCliente (TParam *par)
 		
 		if (codigo ==4) { //piden saber en que partidas estan  
 			char* getdata = GetGames(nombre);
-			strcpy(respuesta, getdata);
-			printf("respuesta = %s\n", respuesta);
+			strcpy(respuesta1, getdata);
+			sprintf(respuesta, "4?%s", respuesta1);
 			write (sock_conn,respuesta, strlen(respuesta));
 			printf("%s\n", respuesta);
 			//close(sock_conn);
@@ -567,8 +579,11 @@ void *AtenderCliente (TParam *par)
 		}
 		
 		if (codigo ==5) { //Obtener la lista de conectados 
-			GetOnline (par->onlinelist, respuesta);
-			write (sock_conn, respuesta, strlen(respuesta)); 
+			GetOnline (par->onlinelist, respuesta1);
+			sprintf(respuesta, "5?%s", respuesta1);
+			int j;
+			for (j=0; j<ii;j++)
+				write (sockets[j], respuesta, strlen(respuesta)); 
 			
 		}
 		
@@ -576,8 +591,10 @@ void *AtenderCliente (TParam *par)
 			pthread_mutex_lock (&mutex);
 			int res = DeleteOnline (par->onlinelist, nombre);
 			pthread_mutex_unlock (&mutex);
-			sprintf(respuesta, "%d", res);
-			write (sock_conn, respuesta, strlen(respuesta)); 
+			sprintf(respuesta, "6?%d", res);
+			int k;
+			for (k=0; k<ii;k++)
+				write (sockets[k], respuesta, strlen(respuesta));
 			
 		}
 	}
@@ -604,32 +621,32 @@ int main(int argc, char *argv[])
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// escucharemos en el port 9050
-	serv_adr.sin_port = htons(9082);
+	serv_adr.sin_port = htons(9091);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind");
 	//La cola de peticiones pendientes no podr? ser superior a 4
 	if (listen(sock_listen, 4) < 0)
 		printf("Error en el Listen");
 	
-	int i = 0;
+
 	int max_threads = 5;
 	pthread_t thread;
 	TParam param [100];
-	int sockets[100];
+	
 	for (;;){
 		printf("Escuchando...\n");
 		sock_conn = accept(sock_listen, NULL, NULL);
 		printf ("He recibido conexion\n");
 		
-		sockets[i] = sock_conn;
-		param[i].socketnum = sockets[i];
-		param[i].onlinelist = &mylist;
+		sockets[ii] = sock_conn;
+		param[ii].socketnum = sockets[ii];
+		param[ii].onlinelist = &mylist;
 		
-		pthread_create (&thread, NULL, AtenderCliente, &param[i]);
+		pthread_create (&thread, NULL, AtenderCliente, &param[ii]);
 		//char online[300];
 		//GetOnline (&mylist, online);
 		//printf ("Resultado: %s\n", online);
-		i=i+1;
+		ii=ii+1;
 	}
 	
 	return 0;
