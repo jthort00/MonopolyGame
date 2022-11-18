@@ -4,7 +4,7 @@
     V3 Revisada por: Andrea
     V3 Vídeo por: Ivan
     URL del vídeo: -
-    URL del vídeo (Entorno de producción): -
+    URL del vídeo (Entorno de producción): https://youtu.be/OpYCQGFsKcg
     
 ##  V2  
     V2 Generada por: Jordi
