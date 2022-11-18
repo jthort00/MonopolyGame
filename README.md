@@ -1,4 +1,11 @@
 # Monopoly  
+##  V3  
+    V3 Generada por: Jordi
+    V3 Revisada por: Andrea
+    V3 Vídeo por: Ivan
+    URL del vídeo: -
+    URL del vídeo (Entorno de producción): -
+    
 ##  V2  
     V2 Generada por: Jordi
     V2 Revisada por: Ivan
