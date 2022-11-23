@@ -30,7 +30,7 @@ namespace WindowsFormsApplication1
             label1.Text = "Welcome " + this.username;
             string mensaje = "4/" + username;
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
-            //server1.Send(msg);
+            server1.Send(msg);
             
             
 

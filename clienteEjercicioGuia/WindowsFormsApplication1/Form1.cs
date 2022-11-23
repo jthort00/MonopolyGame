@@ -17,6 +17,7 @@ namespace WindowsFormsApplication1
         public Socket server;
         Thread atender;
         int connected = 0;
+
         Form2 form2;
         Form4 form4;
 
@@ -46,10 +47,11 @@ namespace WindowsFormsApplication1
                 string[] trozos = Encoding.ASCII.GetString(msg2).Split('?');
                 int codigo = Convert.ToInt32(trozos[0]);
                 string mensaje = trozos[1].Split('\0')[0];
+            
                 switch (codigo)
                 {
                     case 1:
-                     
+                        mensaje = trozos[1];
                         if (mensaje == "-2")
                             MessageBox.Show("User already exists");
                         if (mensaje == "-1")
@@ -57,10 +59,8 @@ namespace WindowsFormsApplication1
                         if (mensaje == "0")
                         {
                             MessageBox.Show("Sucessful registration");
-                            form2.Close();
-                            // Si es descomenten les funcions de baix, creant un nou form2 es reprodueix l'error que passa amb el form4
-                            //form2 = new Form2();
-                            //form2.Show();
+                            this.form2.Close();
+                           
                         }
                         break;
 
@@ -69,11 +69,10 @@ namespace WindowsFormsApplication1
                             MessageBox.Show("Username or password are wrong");
                         if (mensaje == "1")
                         {
-                            form4 = new Form4();
-                            form4.username = this.username.Text;
-                            form4.server1 = this.server;
-                            form4.Show();
-                            this.Hide();
+                            ThreadStart ts = delegate { PonerEnMarchaFormulario4(); };
+                            Thread T = new Thread(ts);
+                            T.Start();
+
                         }
                         break;
 
@@ -90,7 +89,6 @@ namespace WindowsFormsApplication1
                     case 4:
                         if (mensaje != "-1")
                         {
-                            MessageBox.Show(mensaje);
                             parts = mensaje.Split('$');
                             int i = 0;
                             while (i + 1 < parts.Length)
@@ -133,11 +131,9 @@ namespace WindowsFormsApplication1
                     case 6:
                         if (mensaje == "0")
                         {
-                            Form1 form1 = new Form1();
-                            form1.server = form4.server1;
-                            form1.BackColor = Color.Green;
-                            form1.Show();
-                            this.Close();
+                            ThreadStart ts = delegate { PonerEnMarchaFormulario1(); };
+                            Thread Th = new Thread(ts);
+                            Th.Start();
                         }
 
                         else
@@ -201,7 +197,7 @@ namespace WindowsFormsApplication1
             //Creamos un IPEndPoint con el ip del servidor y puerto del servidor 
             //al que deseamos conectarnos
             IPAddress direc = IPAddress.Parse("192.168.56.102");
-            IPEndPoint ipep = new IPEndPoint(direc, 9091);
+            IPEndPoint ipep = new IPEndPoint(direc, 9098);
 
 
             //Creamos el socket 
@@ -268,7 +264,29 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("Press connect to start");
         }
 
+        private void PonerEnMarchaFormulario4 () 
+        {
+            this.form4 = new Form4();
+            this.form4.username = this.username.Text;
+            this.form4.server1 = this.server;
+            this.form4.ShowDialog();
+            this.Hide();
+
+            
+        }
+
+        private void PonerEnMarchaFormulario1 ()
+        {
+            this.form4.Close();
+            Form1 form1 = new Form1();
+            form1.server = this.form4.server1;
+            form1.BackColor = Color.Green;
+            form1.ShowDialog();
+            
+
+        }
         
     }
+
 
 }
