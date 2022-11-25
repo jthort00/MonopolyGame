@@ -5,6 +5,12 @@ USE Monopoly;
 CREATE TABLE Games (
  gameID INT,
  status VARCHAR(50),
+ player1 VARCHAR(50),
+ player2 VARCHAR(50),
+ player3 VARCHAR(50),
+ player4 VARCHAR(50),
+ player5 VARCHAR(50),
+ Player6 VARCHAR(50),
  PRIMARY KEY (gameID)
 )ENGINE=InnoDB;
 
