@@ -2,7 +2,7 @@
 ##  V4  
     V4 Generada por: Jordi
     V4 Revisada por: Ivan
-    V4 Vídeo por: Andreae
+    V4 Vídeo por: Andrea
     URL del vídeo: -
 
 ##  V3  
