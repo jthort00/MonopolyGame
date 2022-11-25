@@ -18,6 +18,7 @@ typedef struct {
 	int num;
 } ListOnline;
 
+
 typedef struct {
 	int socketnum;
 	ListOnline* onlinelist;
@@ -293,11 +294,12 @@ char* CreateGame (char username[256])
 		printf ("%d", newgameid);
 	}
 	char newgameids [16];
-	strcpy (consulta1, "INSERT INTO Games VALUES (");
+	strcpy (consulta1, "INSERT INTO Games (gameID, status, player1) VALUES (");
 	sprintf(newgameids, "%d", newgameid);
 	strcat (consulta1, newgameids);
-	strcat (consulta1, ", 'Starting");
-	strcat (consulta1, "')");
+	strcat (consulta1, ", 'Starting', '");
+	strcat (consulta1, username);
+	strcat (consulta1, "');");
 	
 	printf("consulta = %s\n", consulta1);
 	
@@ -442,7 +444,7 @@ char* GetGames(char username[256])
 	row = mysql_fetch_row (resultado);
 	char* infop;
 	char info[2048];
-	strcpy (info, " ");
+	strcpy (info, "");
 	if (row == NULL){
 		strcpy(info, "-1");
 		infop = info;
@@ -484,11 +486,126 @@ char* GetGames(char username[256])
 		}
 		infop = info;
 		printf("info = %s\n", info);
+		mysql_close (conn);
 		return infop;
 	}
 	
 	
 }
+
+int GetSocket (ListOnline *onlinelist, char nombre [512])
+{
+	int found = 0; 
+	int i = 0;
+	int k;
+	while (i<onlinelist->num && found == 0)
+	{
+		k = strcmp(onlinelist->online_users[i].name, nombre);
+		if (k==0)
+		{
+			found = 1;
+			return onlinelist->online_users[i].socket;
+		}
+		else
+			i=i+1;
+	}
+	if (found==0)
+	{
+		return -1;
+	}
+}
+
+int AddUsertoGame (int gameid, char nombre[512])
+{
+	printf("We got here");
+	MYSQL *conn;
+	MYSQL_RES *resultado;
+	MYSQL_ROW row;
+	int err;
+	char consulta[512];
+	char consulta1[512];
+	
+	
+	
+	
+	conn = mysql_init(NULL);
+	
+	if (conn==NULL) {
+		printf ("Error al crear la conexion: %u %s\n",
+				mysql_errno(conn), mysql_error(conn));
+		return "-1";
+		exit (1);
+	}
+	
+	
+	conn = mysql_real_connect (conn, "localhost","root", "mysql", "Monopoly",0, NULL, 0);
+	
+	if (conn==NULL) {
+		printf ("Error al inicializar la conexion: %u %s\n",
+				mysql_errno(conn), mysql_error(conn));
+		return "-1";
+		exit (1);
+	}
+	
+	
+	int i = 1;
+	while (i<7) {
+		strcpy (consulta, "SELECT player");
+		strcat (consulta, i);
+		strcat (consulta, " FROM Games WHERE gameID = '");
+		strcat (consulta, gameid);
+		strcat (consulta, "';");
+		
+		printf("consulta = %s\n", consulta);
+		
+		err = mysql_query(conn, consulta);
+		if (err!=0) {
+			printf ("Error al introducir datos la base %u %s\n", 
+					mysql_errno(conn), mysql_error(conn));
+			
+			return "-1";
+			exit (1);
+		}
+		else {
+			printf("DID WORK\n");
+		}
+		resultado = mysql_store_result (conn);
+		row = mysql_fetch_row (resultado);
+		if (row == NULL){
+			strcpy(consulta1, "UPDATE Games SET player");
+			strcat(consulta1, i);
+			strcat(consulta1, " = '");
+			strcat(consulta1, nombre);
+			strcat(consulta1, "' WHERE gameID = '");
+			strcat(consulta1, gameid);
+			strcat(consulta1, "';");
+			printf("consulta = %s\n", consulta1);
+			
+			err = mysql_query(conn, consulta);
+			if (err!=0) {
+				printf ("Error al introducir datos la base %u %s\n", 
+						mysql_errno(conn), mysql_error(conn));
+				
+				return "-1";
+				exit (1);
+			}
+			else {
+				printf("DID WORK\n");
+			return 0;
+			}
+		}
+		else
+			i=i+1;
+		mysql_close (conn);
+		
+	}
+	
+	
+	
+	
+	
+}
+
 
 void *AtenderCliente (TParam *par)
 {
@@ -517,10 +634,12 @@ void *AtenderCliente (TParam *par)
 		
 		char *p = strtok(peticion, "/");
 		int codigo =  atoi (p);
+
 		p = strtok( NULL, "/");
 		char nombre[512];
 		strcpy (nombre, p);
 		printf ("Codigo: %d, Nombre: %s\n", codigo, nombre);
+		int sockt;
 		
 		if (codigo ==0) { //piden cerrar conexión
 			
@@ -544,15 +663,15 @@ void *AtenderCliente (TParam *par)
 			write (sock_conn,respuesta, strlen(respuesta));
 			printf("%s\n", respuesta);
 			pthread_mutex_lock (&mutex);
-			AddOnline(par->onlinelist, nombre, 12);
+			AddOnline(par->onlinelist, nombre, par->socketnum);
 			pthread_mutex_unlock (&mutex);
-			//GetOnline (par->onlinelist, respuesta1);
-			//sprintf(respuesta, "5?%s", respuesta1);
-			//if (signup == 1)
+			GetOnline (par->onlinelist, respuesta1);
+			sprintf(respuesta, "5?%s", respuesta1);
+			if (signup == 1)
 			{
-				//int j;
-				//for (j=0; j<ii;j++)
-					//write (sockets[j], respuesta, strlen(respuesta));
+				int j;
+				for (j=0; j<ii;j++)
+					write (sockets[j], respuesta, strlen(respuesta));
 			}
 			//close(sock_conn);
 			
@@ -597,6 +716,54 @@ void *AtenderCliente (TParam *par)
 				write (sockets[k], respuesta, strlen(respuesta));
 			
 		}
+		
+		if (codigo ==7) { //Enviar invitación
+			p = strtok( NULL, "/");
+			char invitado[512];
+			strcpy (invitado, p);
+			printf("%s\n", invitado);
+			sockt = GetSocket(par->onlinelist, invitado);
+			p = strtok( NULL, "/");
+			int gameid =  atoi (p);
+			sprintf(respuesta, "7?%s/%d", nombre, gameid);
+			write (sockt, respuesta, strlen(respuesta));
+			printf("%s\n",respuesta);
+			
+		}
+		if (codigo ==8) { //Respuesta invitación
+			char u_envia[512];
+			char u_recibe[512];
+			strcpy (u_envia, nombre);
+			printf("El usuario siguiente dice que acepta %s\n", u_envia);
+			p = strtok (NULL, "/");
+			strcpy (u_recibe, p);
+			printf("El usuario que le ha invitado es %s\n", u_recibe);
+			p = strtok (NULL, "/");
+			int gid = atoi(p);
+			printf("El numero de partida es %d\n", gid);
+			p = strtok (NULL, "/");
+			int ad = atoi(p);
+			printf("El numero allow/deny es %d\n", ad);
+			if (ad==0)
+			{
+				sprintf(respuesta, "8?%s/0", u_envia);
+				sockt = GetSocket(par->onlinelist, u_recibe);
+				write (sockt, respuesta, strlen(respuesta));
+			}
+			else if (ad==1)
+			{
+				printf("We got here");
+				
+				//int adduser = AddUsertoGame(gid, u_envia);
+				sprintf(respuesta, "8?%s/%d/1", u_envia, 0);
+				sockt = GetSocket(par->onlinelist, u_recibe);
+				write (sockt, respuesta, strlen(respuesta));
+				
+			}
+			printf("%s\n",respuesta);
+		
+			
+		}
 	}
 	
 }
@@ -621,7 +788,7 @@ int main(int argc, char *argv[])
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// escucharemos en el port 9050
-	serv_adr.sin_port = htons(9091);
+	serv_adr.sin_port = htons(7019);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind");
 	//La cola de peticiones pendientes no podr? ser superior a 4

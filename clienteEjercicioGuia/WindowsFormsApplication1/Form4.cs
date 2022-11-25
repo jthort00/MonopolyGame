@@ -15,8 +15,13 @@ namespace WindowsFormsApplication1
     {
         public Socket server1;
         public string username;
-  
+        public List<string> onlineList = new List<string>();
+        public int lastgameid;
+        public Form5 form5;
         
+
+
+
         public Form4()
         {
             InitializeComponent();
@@ -41,17 +46,26 @@ namespace WindowsFormsApplication1
         {
             int index = dataGridView1.CurrentCell.RowIndex;
             int gameid = Convert.ToInt32(dataGridView1.Rows[index].Cells[0].Value);
-            MessageBox.Show("Game selected:" + gameid + " **Work in progress**");
+            //MessageBox.Show("Game selected:" + gameid + " **Work in progress**");
 
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-           
             string mensaje = "3/" + username;
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
             server1.Send(msg);
-                     
+
+
+            form5 = new Form5();
+            form5.gameid = lastgameid;
+            form5.server = this.server1;
+            form5.username = this.username;
+            form5.onlineList = this.onlineList;
+            form5.ShowDialog();
+            
+
+            
             
         }
 

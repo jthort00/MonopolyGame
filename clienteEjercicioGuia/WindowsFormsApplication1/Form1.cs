@@ -20,6 +20,13 @@ namespace WindowsFormsApplication1
 
         Form2 form2;
         Form4 form4;
+        Form5 form5;
+        Form6 form6;
+
+        string player_inv;
+        int gameid;
+        public List<string> onlineList = new List<string>();
+
 
         public Form1()
         {
@@ -42,9 +49,12 @@ namespace WindowsFormsApplication1
             while (true)
             {
                 //Recibimos mensaje del servidor
-                byte[] msg2 = new byte[80];
+                byte[] msg2 = new byte[500];
                 server.Receive(msg2);
+                if (Encoding.ASCII.GetString(msg2) == " ")
+                    MessageBox.Show("Received null message");
                 string[] trozos = Encoding.ASCII.GetString(msg2).Split('?');
+                //MessageBox.Show("He recibido este mensaje" + Encoding.ASCII.GetString(msg2));
                 int codigo = Convert.ToInt32(trozos[0]);
                 string mensaje = trozos[1].Split('\0')[0];
             
@@ -69,8 +79,8 @@ namespace WindowsFormsApplication1
                             MessageBox.Show("Username or password are wrong");
                         if (mensaje == "1")
                         {
-                            ThreadStart ts = delegate { PonerEnMarchaFormulario4(); };
-                            Thread T = new Thread(ts);
+                            ThreadStart t = delegate { PonerEnMarchaFormulario4(); };
+                            Thread T = new Thread(t);
                             T.Start();
 
                         }
@@ -78,6 +88,7 @@ namespace WindowsFormsApplication1
 
                     case 3:
                         string[] parts = mensaje.Split('/');
+                        MessageBox.Show(mensaje);
                         if (parts[3] == "0")
                             parts[3] = "No";
 
@@ -101,6 +112,7 @@ namespace WindowsFormsApplication1
 
                                 string [] row1 = { parts1[0], parts1[2], parts1[1], parts1[3], parts1[4] };
                                 form4.dataGridView1.Rows.Add(row1);
+                                form4.lastgameid = Convert.ToInt32(parts1[0]);
                                 i = i + 1;
 
                             }
@@ -117,10 +129,12 @@ namespace WindowsFormsApplication1
                         parts = mensaje.Split('/');
                         if (mensaje != "0/null")
                         {
-                            int i = 1;
+                            int i = 0;
                             while (i < parts.Length)
                             {
                                 OnlineUsers.Rows.Add(parts[i]);
+                                onlineList.Add(parts[i]);
+                                form4.onlineList.Add(parts[i]);
                                 i = i + 1;
                             }
 
@@ -131,8 +145,8 @@ namespace WindowsFormsApplication1
                     case 6:
                         if (mensaje == "0")
                         {
-                            ThreadStart ts = delegate { PonerEnMarchaFormulario1(); };
-                            Thread Th = new Thread(ts);
+                            ThreadStart tss = delegate { PonerEnMarchaFormulario1(); };
+                            Thread Th = new Thread(tss);
                             Th.Start();
                         }
 
@@ -141,9 +155,39 @@ namespace WindowsFormsApplication1
 
                         break;
 
+                    case 7:
+                        parts = mensaje.Split('/');
+                        player_inv = parts[0];
+                        gameid = Convert.ToInt32(parts[1]);
+                        ThreadStart ts = delegate { PonerEnMarchaFormulario6(); };
+                        Thread Thr = new Thread(ts);
+                        Thr.Start();
+                        break;
+
+                    case 8:
+                        parts = mensaje.Split('/');
+                        if (parts[1]=="1")
+                        {
+                            MessageBox.Show(parts[1] + "has accepted your request");
+                            ts = delegate { PonerEnMarchaFormulario5(parts[0],1); };
+                            Thread NTh = new Thread(ts);
+                            NTh.Start();
+                        }
+                        if (parts[1]=="0")
+                        {
+                            MessageBox.Show(parts[1] + "has rejected your request");
+                            ts = delegate { PonerEnMarchaFormulario5("null", 0); };
+                            Thread NTh = new Thread(ts);
+                            NTh.Start();
+
+                        }
+
+                        break;
+
+
 
                 }
-             
+
 
             }
 
@@ -197,7 +241,7 @@ namespace WindowsFormsApplication1
             //Creamos un IPEndPoint con el ip del servidor y puerto del servidor 
             //al que deseamos conectarnos
             IPAddress direc = IPAddress.Parse("192.168.56.102");
-            IPEndPoint ipep = new IPEndPoint(direc, 9098);
+            IPEndPoint ipep = new IPEndPoint(direc, 7019);
 
 
             //Creamos el socket 
@@ -269,6 +313,7 @@ namespace WindowsFormsApplication1
             this.form4 = new Form4();
             this.form4.username = this.username.Text;
             this.form4.server1 = this.server;
+            this.form4.form5 = this.form5;
             this.form4.ShowDialog();
             this.Hide();
 
@@ -285,7 +330,44 @@ namespace WindowsFormsApplication1
             
 
         }
-        
+
+        private void PonerEnMarchaFormulario6()
+        {
+            this.form6 = new Form6();
+            form6.player_inviting = this.player_inv;
+            form6.server = this.server;
+            form6.username = this.username.Text;
+            form6.gameid = this.gameid;
+            form6.ShowDialog();
+
+
+        }
+
+        private void PonerEnMarchaFormulario5(string player, int allow)
+        {
+            if (allow ==1) { 
+                this.form5 = new Form5();
+                form5.onlineList = this.onlineList;
+                form5.ingameList.Add(player);
+                form5.server = this.server;
+                form5.username = this.username.Text;
+                form5.gameid = this.gameid;
+                form5.ShowDialog();
+            }
+
+            else
+            {
+                this.form5 = new Form5();
+                form5.onlineList = this.onlineList;
+                form5.server = this.server;
+                form5.username = this.username.Text;
+                form5.gameid = this.gameid;
+                form5.ShowDialog();
+            }
+
+
+        }
+
     }
 
 
