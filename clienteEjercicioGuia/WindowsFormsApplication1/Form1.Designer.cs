@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.label2 = new System.Windows.Forms.Label();
             this.username = new System.Windows.Forms.TextBox();
@@ -40,11 +39,8 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
-            this.OnlineUsers = new System.Windows.Forms.DataGridView();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.OnlineUsers)).BeginInit();
             this.SuspendLayout();
             // 
             // label2
@@ -118,9 +114,6 @@
             this.label1.TabIndex = 6;
             this.label1.Text = "Password";
             // 
-            // timer1
-            // 
-            // 
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
@@ -151,38 +144,12 @@
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
-            // OnlineUsers
-            // 
-            this.OnlineUsers.AllowUserToAddRows = false;
-            this.OnlineUsers.AllowUserToDeleteRows = false;
-            this.OnlineUsers.AllowUserToResizeColumns = false;
-            this.OnlineUsers.AllowUserToResizeRows = false;
-            this.OnlineUsers.BackgroundColor = System.Drawing.Color.LightGreen;
-            this.OnlineUsers.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.OnlineUsers.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-            this.OnlineUsers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.OnlineUsers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Column1});
-            this.OnlineUsers.GridColor = System.Drawing.SystemColors.ActiveCaption;
-            this.OnlineUsers.Location = new System.Drawing.Point(577, 203);
-            this.OnlineUsers.Name = "OnlineUsers";
-            this.OnlineUsers.Size = new System.Drawing.Size(244, 342);
-            this.OnlineUsers.TabIndex = 10;
-            // 
-            // Column1
-            // 
-            this.Column1.HeaderText = "Username";
-            this.Column1.Name = "Column1";
-            this.Column1.ReadOnly = true;
-            this.Column1.Width = 200;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.LightGreen;
             this.ClientSize = new System.Drawing.Size(833, 591);
-            this.Controls.Add(this.OnlineUsers);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.pictureBox1);
@@ -193,7 +160,6 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.OnlineUsers)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -210,8 +176,6 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.DataGridView OnlineUsers;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
     }
 }
 

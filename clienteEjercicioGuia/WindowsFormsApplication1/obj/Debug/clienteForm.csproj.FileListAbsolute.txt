@@ -119,3 +119,4 @@ C:\Users\jtort\Documents\Escola\DG Aeroespacials + Telemàtica\2022Q1\Sistemes o
 C:\Users\jtort\Documents\Escola\DG Aeroespacials + Telemàtica\2022Q1\Sistemes operatius\Monopoly_proyecto\clienteEjercicioGuia\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form4.resources
 C:\Users\jtort\Documents\Escola\DG Aeroespacials + Telemàtica\2022Q1\Sistemes operatius\Monopoly_proyecto\clienteEjercicioGuia\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form5.resources
 C:\Users\jtort\Documents\Escola\DG Aeroespacials + Telemàtica\2022Q1\Sistemes operatius\Monopoly_proyecto\clienteEjercicioGuia\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form6.resources
+C:\Users\jtort\Documents\Escola\DG Aeroespacials + Telemàtica\2022Q1\Sistemes operatius\Monopoly_proyecto\clienteEjercicioGuia\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form7.resources

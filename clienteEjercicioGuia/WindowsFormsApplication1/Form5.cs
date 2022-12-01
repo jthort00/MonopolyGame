@@ -15,7 +15,6 @@ namespace WindowsFormsApplication1
         public Socket server;
         public string username;
         public int gameid;
-        public List<string> onlineList = new List<string>();
         public List<string> ingameList = new List<string>();
 
         public Form5()
@@ -25,29 +24,18 @@ namespace WindowsFormsApplication1
 
         private void Form5_Load(object sender, EventArgs e)
         {
+            
             int i = 0;
-            while (i<onlineList.Count)
+            while (i<ingameList.Count)
             {
-                dataGridView1.Rows.Add(onlineList[i]);
+                dataGridView2.Rows.Add(ingameList[i]);
                 i = i + 1;
             }
+            
 
         }
 
-     
-
-        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            int index = dataGridView1.CurrentCell.RowIndex;
-            string player = Convert.ToString(dataGridView1.Rows[index].Cells[0].Value);
-            MessageBox.Show("Game selected:" + player + " **Work in progress**");
-
-            string mensaje = "7/" + username + "/" + player + "/"+gameid;
-            byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
-            server.Send(msg);
-        }
-
-        public void ReturnThings()
+        private void dataGridView2_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }

@@ -58,11 +58,10 @@ namespace WindowsFormsApplication1
 
 
             form5 = new Form5();
-            form5.gameid = lastgameid;
             form5.server = this.server1;
             form5.username = this.username;
-            form5.onlineList = this.onlineList;
-            form5.ShowDialog();
+            form5.label1.Refresh();
+            form5.Show();
             
 
             
@@ -79,6 +78,38 @@ namespace WindowsFormsApplication1
             string mensaje = "6/" + username;
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
             server1.Send(msg);
+
+            mensaje = "5/N";
+            msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+            server1.Send(msg); 
+
+        }
+
+        public void AddToTheGame(string añadir)
+        {
+            form5.dataGridView2.Rows.Add(añadir);
+            form5.dataGridView2.Refresh();
+        }
+
+        public void GiveGameForm5(int gameid)
+        {
+            form5.gameid = gameid;
+            form5.label1.Text = "Game " + gameid + " waiting room";
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            //int index = dataGridView1.CurrentCell.RowIndex;
+            //int gameid = Convert.ToInt32(dataGridView1.Rows[index].Cells[0].Value);
+
+            //string mensaje = "9/" + username + "/" + gameid;
+            //byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+            //server1.Send(msg);
+            //dataGridView1.Rows.Clear();
+
+            //mensaje = "4/" + username;
+            //msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+            //server1.Send(msg);
 
         }
     }

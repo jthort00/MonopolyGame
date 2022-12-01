@@ -16,6 +16,7 @@ namespace WindowsFormsApplication1
         public string username;
         public Socket server;
         public int gameid;
+        public List<string> ingameList = new List<string>();
 
 
 
@@ -47,8 +48,12 @@ namespace WindowsFormsApplication1
             string mensaje = "8/" + player_inviting + "/" + username + "/" + gameid + "/1";
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
             server.Send(msg);
-            
-
+            Form5 form5 = new Form5();
+            ingameList.Add(username);
+            form5.button1.Visible = false;
+            form5.button1.Enabled = false;
+            form5.ingameList = this.ingameList;
+            form5.ShowDialog();
             this.Close();
         }
     }

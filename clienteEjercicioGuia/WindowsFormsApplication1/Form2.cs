@@ -40,6 +40,8 @@ namespace WindowsFormsApplication1
                         string mensaje = "1/" + textBox1.Text + "$" + textBox2.Text + "$" + numericUpDown1.Value;
                         byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
                         server.Send(msg);
+                      
+                        //this.Close();
                         
                     }
                     catch (SocketException)

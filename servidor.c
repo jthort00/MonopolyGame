@@ -28,6 +28,9 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int ii = 0;
 int sockets[100];
+MYSQL *conn;
+MYSQL_RES *resultado;
+MYSQL_ROW row;
 
 int AddOnline (ListOnline *list, char name[20], int socket){
 	if (list->num == 100)
@@ -86,9 +89,9 @@ void GetOnline (ListOnline *list, char online[300]){
 
 int NewAccount (char userdata[512])
 {
-	MYSQL *conn;
-	MYSQL_RES *resultado;
-	MYSQL_ROW row;
+	//MYSQL *conn;
+	//MYSQL_RES *resultado;
+	//MYSQL_ROW row;
 	int err;
 	int duplicated;
 	char username[256];
@@ -162,7 +165,7 @@ int NewAccount (char userdata[512])
 		printf("DID NOT WORK");
 		return -2;
 	
-	mysql_close (conn);
+	//mysql_close (conn);
 	exit(0);
 	
 }
@@ -170,9 +173,9 @@ int NewAccount (char userdata[512])
 
 int SignUp (char userpass[512])
 {
-	MYSQL *conn;
-	MYSQL_RES *resultado;
-	MYSQL_ROW row;
+	//MYSQL *conn;
+	//MYSQL_RES *resultado;
+	//MYSQL_ROW row;
 	int err;
 	char consulta [512];
 	char username[256];
@@ -223,16 +226,16 @@ int SignUp (char userpass[512])
 	}
 	else
 		return 1;
-	mysql_close (conn);
+	//mysql_close (conn);
 	exit(0);
 	
 }
 
 char* CreateGame (char username[256])
 {
-	MYSQL *conn;
-	MYSQL_RES *resultado;
-	MYSQL_ROW row;
+	//MYSQL *conn;
+	//MYSQL_RES *resultado;
+	//MYSQL_ROW row;
 	int err;
 	int currentid;
 	int newgameid;
@@ -391,15 +394,15 @@ char* CreateGame (char username[256])
 
 	
 	
-	mysql_close (conn);
+	//mysql_close (conn);
 	exit(0);
 }
 
 char* GetGames(char username[256])
 {
-	MYSQL *conn;
-	MYSQL_RES *resultado;
-	MYSQL_ROW row;
+	//MYSQL *conn;
+	//MYSQL_RES *resultado;
+	//MYSQL_ROW row;
 	int err;
 
 	char consulta [512];
@@ -486,7 +489,7 @@ char* GetGames(char username[256])
 		}
 		infop = info;
 		printf("info = %s\n", info);
-		mysql_close (conn);
+		//mysql_close (conn);
 		return infop;
 	}
 	
@@ -517,71 +520,60 @@ int GetSocket (ListOnline *onlinelist, char nombre [512])
 
 int AddUsertoGame (int gameid, char nombre[512])
 {
-	printf("We got here");
-	MYSQL *conn;
-	MYSQL_RES *resultado;
-	MYSQL_ROW row;
+	//MYSQL *conn;
+	//MYSQL_RES *resultado;
+	//MYSQL_ROW row;
+
 	int err;
 	char consulta[512];
 	char consulta1[512];
 	
 	
-	
-	
 	conn = mysql_init(NULL);
-	
 	if (conn==NULL) {
 		printf ("Error al crear la conexion: %u %s\n",
 				mysql_errno(conn), mysql_error(conn));
-		return "-1";
 		exit (1);
 	}
 	
-	
 	conn = mysql_real_connect (conn, "localhost","root", "mysql", "Monopoly",0, NULL, 0);
-	
 	if (conn==NULL) {
 		printf ("Error al inicializar la conexion: %u %s\n",
 				mysql_errno(conn), mysql_error(conn));
-		return "-1";
 		exit (1);
+	}
+	else {
+		printf("Sucessful connection to Mysql\n");
 	}
 	
 	
-	int i = 1;
-	while (i<7) {
-		strcpy (consulta, "SELECT player");
-		strcat (consulta, i);
-		strcat (consulta, " FROM Games WHERE gameID = '");
-		strcat (consulta, gameid);
-		strcat (consulta, "';");
+	sprintf (consulta, "SELECT * FROM Games WHERE gameID = %d;", gameid);
+	printf("consulta = %s\n", consulta);
+	err = mysql_query(conn, consulta);
+	
+	resultado = mysql_store_result (conn);
+	row = mysql_fetch_row (resultado);
+	
+	if (err!=0) {
+		printf ("Error al introducir datos la base %u %s\n", 
+				mysql_errno(conn), mysql_error(conn));
 		
-		printf("consulta = %s\n", consulta);
+		return "-1";
+		exit (1);
+	}
+	else {
+		printf("DID WORK\n");
+	
+	int i = 3;
+	while (i<8) {
 		
-		err = mysql_query(conn, consulta);
-		if (err!=0) {
-			printf ("Error al introducir datos la base %u %s\n", 
-					mysql_errno(conn), mysql_error(conn));
+		if (row[i] == NULL){
+			int j=i-2;
+			printf("We got here\n");
+			sprintf(consulta1, "UPDATE Games SET player%d = '%s' WHERE gameID = %d;",j,nombre,gameid);
+			printf("consulta1 = %s\n", consulta1);
 			
-			return "-1";
-			exit (1);
-		}
-		else {
-			printf("DID WORK\n");
-		}
-		resultado = mysql_store_result (conn);
-		row = mysql_fetch_row (resultado);
-		if (row == NULL){
-			strcpy(consulta1, "UPDATE Games SET player");
-			strcat(consulta1, i);
-			strcat(consulta1, " = '");
-			strcat(consulta1, nombre);
-			strcat(consulta1, "' WHERE gameID = '");
-			strcat(consulta1, gameid);
-			strcat(consulta1, "';");
-			printf("consulta = %s\n", consulta1);
-			
-			err = mysql_query(conn, consulta);
+			err = mysql_query(conn, consulta1);
 			if (err!=0) {
 				printf ("Error al introducir datos la base %u %s\n", 
 						mysql_errno(conn), mysql_error(conn));
@@ -596,15 +588,105 @@ int AddUsertoGame (int gameid, char nombre[512])
 		}
 		else
 			i=i+1;
-		mysql_close (conn);
+		
 		
 	}
 	
 	
 	
-	
+	}
 	
 }
+
+int DeleteUserFromGame (char username[256], int gameid)
+{
+	int err;
+	char consulta[512];
+	char consulta1[512];
+	char consulta2[512];
+	
+	
+	conn = mysql_init(NULL);
+	if (conn==NULL) {
+		printf ("Error al crear la conexion: %u %s\n",
+				mysql_errno(conn), mysql_error(conn));
+		exit (1);
+	}
+	
+	conn = mysql_real_connect (conn, "localhost","root", "mysql", "Monopoly",0, NULL, 0);
+	if (conn==NULL) {
+		printf ("Error al inicializar la conexion: %u %s\n",
+				mysql_errno(conn), mysql_error(conn));
+		exit (1);
+	}
+	else {
+		printf("Sucessful connection to Mysql\n");
+	}
+	
+	
+	sprintf (consulta, "SELECT * FROM Games WHERE gameID = %d;", gameid);
+	printf("consulta = %s\n", consulta);
+	err = mysql_query(conn, consulta);
+	
+	resultado = mysql_store_result (conn);
+	row = mysql_fetch_row (resultado);
+	
+	if (err!=0) {
+		printf ("Error al introducir datos la base %u %s\n", 
+				mysql_errno(conn), mysql_error(conn));
+		
+		return -1;
+		exit (1);
+	}
+	else {
+		printf("DID WORK\n");
+		
+		int i = 3;
+		while (i<8) {
+			printf("We got here");
+			if (strcmp(row[i],username) == 0){
+				int j=i-2;
+				sprintf(consulta1, "UPDATE Games SET player%d = '%s' WHERE gameID = %d;",j,NULL,gameid);
+				printf("consulta1 = %s\n", consulta1);
+				
+				err = mysql_query(conn, consulta1);
+				if (err!=0) {
+					printf ("Error al introducir datos la base %u %s\n", 
+							mysql_errno(conn), mysql_error(conn));
+					
+					return "-1";
+					exit (1);
+				}
+				else {
+					printf("DID WORK\n");
+					return 0;
+				}
+			}
+			else
+				i=i+1;
+			}
+			sprintf(consulta2, "DELETE FROM PlayerStatus WHERE playerID = '%s' AND gameID = %d;", username, gameid);
+			err = mysql_query(conn, consulta2);
+		
+		
+			if (err!=0) {
+				printf ("Error al introducir datos la base %u %s\n", 
+						mysql_errno(conn), mysql_error(conn));
+				
+				return -1;
+				exit (1);
+			}
+			else {
+				printf("DID WORK\n");
+				
+			}
+	}
+		
+		
+}
+	
+	
+
 
 
 void *AtenderCliente (TParam *par)
@@ -617,6 +699,8 @@ void *AtenderCliente (TParam *par)
 	char peticion[512];
 	char respuesta[512];
 	char respuesta1[512];
+	char respuesta2[512];
+	
 	int ret;
 	
 	int end = 0;
@@ -666,12 +750,13 @@ void *AtenderCliente (TParam *par)
 			AddOnline(par->onlinelist, nombre, par->socketnum);
 			pthread_mutex_unlock (&mutex);
 			GetOnline (par->onlinelist, respuesta1);
-			sprintf(respuesta, "5?%s", respuesta1);
+			sprintf(respuesta2, "5?%s", respuesta1);
+			printf("%s\n", respuesta2);
 			if (signup == 1)
 			{
 				int j;
 				for (j=0; j<ii;j++)
-					write (sockets[j], respuesta, strlen(respuesta));
+					write (sockets[j], respuesta2, strlen(respuesta2));
 			}
 			//close(sock_conn);
 			
@@ -712,6 +797,7 @@ void *AtenderCliente (TParam *par)
 			pthread_mutex_unlock (&mutex);
 			sprintf(respuesta, "6?%d", res);
 			int k;
+			mysql_close (conn);
 			for (k=0; k<ii;k++)
 				write (sockets[k], respuesta, strlen(respuesta));
 			
@@ -734,16 +820,12 @@ void *AtenderCliente (TParam *par)
 			char u_envia[512];
 			char u_recibe[512];
 			strcpy (u_envia, nombre);
-			printf("El usuario siguiente dice que acepta %s\n", u_envia);
 			p = strtok (NULL, "/");
 			strcpy (u_recibe, p);
-			printf("El usuario que le ha invitado es %s\n", u_recibe);
 			p = strtok (NULL, "/");
 			int gid = atoi(p);
-			printf("El numero de partida es %d\n", gid);
 			p = strtok (NULL, "/");
 			int ad = atoi(p);
-			printf("El numero allow/deny es %d\n", ad);
 			if (ad==0)
 			{
 				sprintf(respuesta, "8?%s/0", u_envia);
@@ -752,10 +834,9 @@ void *AtenderCliente (TParam *par)
 			}
 			else if (ad==1)
 			{
-				printf("We got here");
 				
-				//int adduser = AddUsertoGame(gid, u_envia);
-				sprintf(respuesta, "8?%s/%d/1", u_envia, 0);
+				int adduser = AddUsertoGame(gid, u_envia);
+				sprintf(respuesta, "8?%s/%d/1", u_envia, 1);
 				sockt = GetSocket(par->onlinelist, u_recibe);
 				write (sockt, respuesta, strlen(respuesta));
 				
@@ -764,6 +845,14 @@ void *AtenderCliente (TParam *par)
 		
 			
 		}
+/*		if (codigo ==9) { *///Salir de una partida 
+/*			p = strtok( NULL, "/");*/
+/*			int gameid =  atoi (p);*/
+/*			int result = DeleteUserFromGame(nombre, gameid);*/
+/*			sprintf(respuesta, "9?%d", result);*/
+/*			write (sock_conn, respuesta, strlen(respuesta));*/
+/*			printf("%s\n",respuesta);*/
+/*		}*/
 	}
 	
 }
@@ -788,7 +877,7 @@ int main(int argc, char *argv[])
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// escucharemos en el port 9050
-	serv_adr.sin_port = htons(7019);
+	serv_adr.sin_port = htons(7042);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind");
 	//La cola de peticiones pendientes no podr? ser superior a 4
