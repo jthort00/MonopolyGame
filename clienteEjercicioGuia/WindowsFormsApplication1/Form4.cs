@@ -18,7 +18,9 @@ namespace WindowsFormsApplication1
         public List<string> onlineList = new List<string>();
         public int lastgameid;
         public Form5 form5;
-        
+
+        delegate void DelegateForm5(int gameid);
+
 
 
 
@@ -81,7 +83,7 @@ namespace WindowsFormsApplication1
 
             mensaje = "5/N";
             msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
-            server1.Send(msg); 
+            server1.Send(msg);
 
         }
 
@@ -94,7 +96,9 @@ namespace WindowsFormsApplication1
         public void GiveGameForm5(int gameid)
         {
             form5.gameid = gameid;
-            form5.label1.Text = "Game " + gameid + " waiting room";
+            DelegateForm5 delega = new DelegateForm5(ThingsForm5);
+            this.Invoke(delega, new object[] { gameid });
+            //form5.label1.Text = "Game " + gameid + " waiting room";
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -110,6 +114,12 @@ namespace WindowsFormsApplication1
             //mensaje = "4/" + username;
             //msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
             //server1.Send(msg);
+
+        }
+
+        public void ThingsForm5(int gameid)
+        {
+            form5.label1.Text = "Game " + gameid + " waiting room";
 
         }
     }
