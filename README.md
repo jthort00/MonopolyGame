@@ -1,8 +1,8 @@
 # Monopoly  
 ##  V5 
     V5 Generada por: Jordi
-    V5 Revisada por: 
-    V5 Vídeo por: 
+    V5 Revisada por: Ivan
+    V5 Vídeo por: Andrea
     URL del vídeo: 
 
 ##  V4  
