@@ -1,4 +1,10 @@
 # Monopoly  
+##  V5 
+    V5 Generada por: Jordi
+    V5 Revisada por: Ivan
+    V5 Vídeo por: Andrea
+    URL del vídeo: https://youtu.be/I5qu-cv_zfE
+
 ##  V4  
     V4 Generada por: Jordi
     V4 Revisada por: Ivan
