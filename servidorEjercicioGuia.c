@@ -18,14 +18,24 @@ typedef struct {
 	int num;
 } ListOnline;
 
+typedef struct {
+	int gameid;
+	Online ingame_users [10];
+	int num;
+} Game;
+
+typedef struct {
+	Game game [100];
+	int num;
+}ListGames;
 
 typedef struct {
 	int socketnum;
 	ListOnline* onlinelist;
+	ListGames* listgames;
 } TParam;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
 int ii = 0;
 int sockets[100];
 MYSQL *conn;
@@ -231,7 +241,7 @@ int SignUp (char userpass[512])
 	
 }
 
-char* CreateGame (char username[256])
+char* CreateGame (char username[256], int socket, ListGames *listgames)
 {
 	//MYSQL *conn;
 	//MYSQL_RES *resultado;
@@ -243,6 +253,7 @@ char* CreateGame (char username[256])
 	char consulta1 [512];
 	char consulta2 [512];
 	char consulta3 [512];
+	Game game;
 	
 	
 	
@@ -303,8 +314,8 @@ char* CreateGame (char username[256])
 	strcat (consulta1, ", 'Starting', '");
 	strcat (consulta1, username);
 	strcat (consulta1, "');");
-	
 	printf("consulta = %s\n", consulta1);
+	
 	
 	err = mysql_query(conn, consulta1);
 	if (err!=0) {
@@ -389,10 +400,17 @@ char* CreateGame (char username[256])
 	strcat (info, returnposition);
 	printf("info = %s\n", info);
 	infop = info;
+	
+	Online PlayerInGame;
+	strcpy(PlayerInGame.name, username);
+	PlayerInGame.socket = socket;
+	game.gameid = newgameid;
+	game.ingame_users[0] = PlayerInGame;
+	game.num=1;
+	listgames->game[listgames->num]=game;
+	listgames->num = listgames->num+1;
+	
 	return infop;
-	
-
-	
 	
 	//mysql_close (conn);
 	exit(0);
@@ -518,7 +536,7 @@ int GetSocket (ListOnline *onlinelist, char nombre [512])
 	}
 }
 
-int AddUsertoGame (int gameid, char nombre[512])
+int AddUsertoGame (int gameid, char nombre[512], int socket, ListGames *listgames)
 {
 	//MYSQL *conn;
 	//MYSQL_RES *resultado;
@@ -565,11 +583,13 @@ int AddUsertoGame (int gameid, char nombre[512])
 		printf("DID WORK\n");
 	
 	int i = 3;
-	while (i<8) {
+	int found = 0;
+	while (i<8 && found ==0) {
 		
-		if (row[i] == NULL){
+		if (row[i] == NULL)
+		{
+			found = 1;
 			int j=i-2;
-			printf("We got here\n");
 			sprintf(consulta1, "UPDATE Games SET player%d = '%s' WHERE gameID = %d;",j,nombre,gameid);
 			printf("consulta1 = %s\n", consulta1);
 			
@@ -581,9 +601,27 @@ int AddUsertoGame (int gameid, char nombre[512])
 				return "-1";
 				exit (1);
 			}
-			else {
+			else 
+			{
 				printf("DID WORK\n");
-			return 0;
+				int k = 0;
+				int found1 = 0;
+				while (k<listgames->num && found1==0)
+				{
+					if (listgames->game[k].gameid == gameid)
+					{
+						listgames->game[k].ingame_users[listgames->game[k].num].socket = socket;
+						strcpy(listgames->game[k].ingame_users[listgames->game[k].num].name, nombre);
+						listgames->game[k].num = listgames->game[k].num+1;
+						found1 = 1;
+					}
+					
+					else
+					{
+						k=k+1;
+					}
+				}	
+				return 0;
 			}
 		}
 		else
@@ -592,10 +630,7 @@ int AddUsertoGame (int gameid, char nombre[512])
 		
 	}
 	
-	
-	
-	}
-	
+	}	
 }
 
 int DeleteUserFromGame (char username[256], int gameid)
@@ -618,9 +653,6 @@ int DeleteUserFromGame (char username[256], int gameid)
 		printf ("Error al inicializar la conexion: %u %s\n",
 				mysql_errno(conn), mysql_error(conn));
 		exit (1);
-	}
-	else {
-		printf("Sucessful connection to Mysql\n");
 	}
 	
 	
@@ -746,14 +778,14 @@ void *AtenderCliente (TParam *par)
 			sprintf(respuesta, "2?%d", signup);
 			write (sock_conn,respuesta, strlen(respuesta));
 			printf("%s\n", respuesta);
-			pthread_mutex_lock (&mutex);
-			AddOnline(par->onlinelist, nombre, par->socketnum);
-			pthread_mutex_unlock (&mutex);
-			GetOnline (par->onlinelist, respuesta1);
-			sprintf(respuesta2, "5?%s", respuesta1);
-			printf("%s\n", respuesta2);
 			if (signup == 1)
 			{
+				pthread_mutex_lock (&mutex);
+				AddOnline(par->onlinelist, nombre, par->socketnum);
+				pthread_mutex_unlock (&mutex);
+				GetOnline (par->onlinelist, respuesta1);
+				sprintf(respuesta2, "5?%s", respuesta1);
+				printf("%s\n", respuesta2);
 				int j;
 				for (j=0; j<ii;j++)
 					write (sockets[j], respuesta2, strlen(respuesta2));
@@ -763,7 +795,8 @@ void *AtenderCliente (TParam *par)
 		}
 		
 		if (codigo ==3) { //piden crear una partida 
-			char* createdata = CreateGame(nombre);
+			char* createdata = CreateGame(nombre, sock_conn, par->listgames);
+			printf("El jugador %s ha creado la partida %d\n", par->listgames->game->ingame_users[0].name, par->listgames->game->gameid);
 			strcpy(respuesta1, createdata);
 			sprintf(respuesta, "3?%s", respuesta1);
 			write (sock_conn,respuesta, strlen(respuesta));
@@ -826,22 +859,55 @@ void *AtenderCliente (TParam *par)
 			int gid = atoi(p);
 			p = strtok (NULL, "/");
 			int ad = atoi(p);
+			int j=0;
+			int i = 0;
+			int found = 0;
+			while (i<par->listgames->num && found==0)
+			{
+				if (par->listgames->game[i].gameid == gid)
+				{
+					printf("He encontrado la partida en la lista %d", par->listgames->game[i].gameid);
+					found = 1;
+				}
+				else
+					i=i+1;
+			}
+			
 			if (ad==0)
 			{
-				sprintf(respuesta, "8?%s/0", u_envia);
-				sockt = GetSocket(par->onlinelist, u_recibe);
-				write (sockt, respuesta, strlen(respuesta));
+				sprintf(respuesta, "8?0/%s/", u_envia);
+				//sockt = GetSocket(par->onlinelist, u_recibe);
+				//write (sockt, respuesta, strlen(respuesta));
 			}
 			else if (ad==1)
 			{
 				
-				int adduser = AddUsertoGame(gid, u_envia);
-				sprintf(respuesta, "8?%s/%d/1", u_envia, 1);
-				sockt = GetSocket(par->onlinelist, u_recibe);
-				write (sockt, respuesta, strlen(respuesta));
-				
+				int adduser = AddUsertoGame(gid, u_envia, sock_conn,par->listgames);
+				sprintf(respuesta, "8?1/%s/", u_envia);
+				//sockt = GetSocket(par->onlinelist, u_recibe);
+				//write (sockt, respuesta, strlen(respuesta));
+				j=0;
+				while (j<par->listgames->game[i].num)
+				{
+					if (strcmp(u_envia, par->listgames->game[i].ingame_users[j].name)!=0)
+					{
+						strcat(respuesta, par->listgames->game[i].ingame_users[j].name);
+						strcat(respuesta, "/");
+					}
+					printf("Añadido a la respuesta: %s\n", par->listgames->game[i].ingame_users[j].name);
+					j=j+1;
+					
+				}
+			}
+			
+			j=0;
+			while (j<par->listgames->game[i].num)
+			{
+				write(par->listgames->game[i].ingame_users[j].socket, respuesta, strlen(respuesta));
+				j=j+1;
 			}
 			printf("%s\n",respuesta);
+			
 		
 			
 		}
@@ -863,7 +929,9 @@ void *AtenderCliente (TParam *par)
 int main(int argc, char *argv[])
 {
 	ListOnline mylist;
+	ListGames listgames;
 	mylist.num = 0;	int sock_conn, sock_listen, ret;
+	listgames.num = 0;
 	struct sockaddr_in serv_adr;
 	
 	// INICIALITZACIONS
@@ -877,7 +945,7 @@ int main(int argc, char *argv[])
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// escucharemos en el port 9050
-	serv_adr.sin_port = htons(7042);
+	serv_adr.sin_port = htons(7063);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind");
 	//La cola de peticiones pendientes no podr? ser superior a 4
@@ -897,6 +965,7 @@ int main(int argc, char *argv[])
 		sockets[ii] = sock_conn;
 		param[ii].socketnum = sockets[ii];
 		param[ii].onlinelist = &mylist;
+		param[ii].listgames = &listgames;
 		
 		pthread_create (&thread, NULL, AtenderCliente, &param[ii]);
 		//char online[300];

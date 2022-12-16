@@ -21,12 +21,13 @@ namespace WindowsFormsApplication1
         Form2 form2;
         Form4 form4;
         Form5 form5;
-        Form6 form6;
+        Form6 form6; 
         Form7 form7 = new Form7();
 
         string player_inv;
         int gameid;
-        string[] parts; 
+        string[] parts;
+        
 
         delegate void DelegateForm4();
         delegate void DelegateForm4_Add(string[] row);
@@ -34,6 +35,7 @@ namespace WindowsFormsApplication1
         delegate void DelegateForm4_Close();
         delegate void DelegateForm7(string[] parts);
         delegate void DelegateForm7_Close();
+        delegate void DelegateForm7_Hide();
 
 
         public Form1()
@@ -46,7 +48,8 @@ namespace WindowsFormsApplication1
 
         public void Form1_Load(object sender, EventArgs e)
         {
-             form7 = new Form7();
+             //form7 = new Form7();
+             
 
         }
 
@@ -79,7 +82,11 @@ namespace WindowsFormsApplication1
 
                     case 2: // Respuesta a iniciar sesión 
                         if (mensaje == "0")
+                        {
                             MessageBox.Show("Username or password are wrong");
+                            DelegateForm7_Hide delegado = new DelegateForm7_Hide(HideForm7);
+                            form7.Invoke(delegado);
+                        }
                         if (mensaje == "1")
                         {
  
@@ -87,13 +94,13 @@ namespace WindowsFormsApplication1
                             Thread T = new Thread(t);
                             T.Start();
                             form7.username = this.username.Text;
+                            
 
                         }
                         break;
 
                     case 3: // Respuesta a crear partida 
                         parts = mensaje.Split('/');
-                        MessageBox.Show(mensaje);
                         DelegateForm4_Add2 delega1 = new DelegateForm4_Add2(MoreThingsForm4);
                         form4.Invoke(delega1, new object[] { parts });
                         //if (parts[3] == "0")
@@ -140,7 +147,6 @@ namespace WindowsFormsApplication1
                         parts = mensaje.Split('/');
                         if (mensaje != "0/null")
                         {
-                            MessageBox.Show(mensaje);
                             DelegateForm7 delega = new DelegateForm7(ThingsForm7);
                             this.Invoke(delega, new object[] {parts});
                             //int i = 1;
@@ -159,10 +165,11 @@ namespace WindowsFormsApplication1
                     case 6: // Respuesta a desconectarse
                         if (mensaje == "0")
                         {
-                            //Application.Restart();
+
                             ThreadStart tss = delegate { PonerEnMarchaFormulario1(); };
                             Thread Th = new Thread(tss);
                             Th.Start();
+                            //form7 = new Form7();
                         }
 
                         else
@@ -181,20 +188,44 @@ namespace WindowsFormsApplication1
 
                     case 8: // Respuesta a la invitación
                         parts = mensaje.Split('/');
-                        if (parts[1]=="1")
+                        MessageBox.Show("He recibido respuesta a la invitación " + mensaje);
+                        if (parts[0]=="1")
                         {
-                            MessageBox.Show(parts[0] + "has accepted your request");
-                            form4.AddToTheGame(parts[0]);
-                            form6.ingameList.Add(parts[0]);
+                            MessageBox.Show(parts[1] + " has accepted the request");
+                            if (parts[2] != username.Text)
+                            {
+                                MessageBox.Show("Tu no eres el host");
+                                ThreadStart thread = delegate { PonerEnMarchaFormulario5(); };
+                                Thread Thread = new Thread(thread);
+                                Thread.Start();
+                                form5.dataGridView2.Rows.Clear();
+                                int i = 1;
+                                while (i < parts.Length)
+                                {
+                                    form5.dataGridView2.Rows.Add(parts[i]);
+                                    form5.dataGridView2.Refresh();
+                                    i = i + 1;
+                                }    
+                            }
+
+                            else
+                            {
+                                form4.AddToTheGame(parts[1]);
+                            }
                         }
-                        if (parts[1]=="0")
+
+                        if (parts[0]=="0")
                         {
-                            MessageBox.Show(parts[0] + "has rejected your request");
+                            MessageBox.Show(parts[0] + " has rejected the request");
 
                         }
 
+                       
+
+
+                        //La respuesta a la invitación se envia a todos. Crear form de partida desde aquí. El host va en la posición parts 2. 
                         break;
-
+                        
                     case 9: // Notificación de que la partida se ha borrado correctamente  
                         parts = mensaje.Split('/');
                         if (parts[0] == "0")
@@ -260,7 +291,7 @@ namespace WindowsFormsApplication1
             //Creamos un IPEndPoint con el ip del servidor y puerto del servidor 
             //al que deseamos conectarnos
             IPAddress direc = IPAddress.Parse("192.168.56.102");
-            IPEndPoint ipep = new IPEndPoint(direc, 7044);
+            IPEndPoint ipep = new IPEndPoint(direc, 7063);
 
 
             //Creamos el socket 
@@ -322,23 +353,23 @@ namespace WindowsFormsApplication1
             DelegateForm4 delegat = new DelegateForm4(ShowDialog4);
             this.Invoke(delegat);
             this.form4.ShowDialog();
-            
 
-            
         }
 
         private void PonerEnMarchaFormulario1 ()
         {
             //form4.Close();
-            //form7.Close();
+            DelegateForm7_Close delegat = new DelegateForm7_Close(CloseForm7);
+            form7.Invoke(delegat);
+           
             DelegateForm4_Close delegat2 = new DelegateForm4_Close(CloseForm4);
             form4.Invoke(delegat2);
-            DelegateForm7_Close delegat3 = new DelegateForm7_Close(CloseForm7);
-            form7.Invoke(delegat3);
-            Form1 form1 = new Form1();
-            form1.server = this.form4.server1;
-            form1.BackColor = Color.Gray;
-            form1.ShowDialog();
+            //DelegateForm7_Close delegat3 = new DelegateForm7_Close(CloseForm7);
+            //form7.Invoke(delegat3);
+            //Form1 form1 = new Form1();
+            //form1.server = this.form4.server1;
+            //form1.BackColor = Color.Gray;
+            //form1.ShowDialog();
             
 
         }
@@ -351,36 +382,21 @@ namespace WindowsFormsApplication1
             form6.username = this.username.Text;
             form6.gameid = this.gameid;
             form6.ShowDialog();
-
-
         }
 
-        private void PonerEnMarchaFormulario5(string player, int allow)
+        private void PonerEnMarchaFormulario5()
         {
-            if (allow ==1) { 
-                this.form5 = new Form5();
-                form5.ingameList.Add(player);
-                form5.server = this.server;
-                form5.username = this.username.Text;
-                form5.gameid = this.gameid;
-                form5.ShowDialog();
-            }
-
-            else
-            {
-                this.form5 = new Form5();
-                form5.server = this.server;
-                form5.username = this.username.Text;
-                form5.gameid = this.gameid;
-                form5.ShowDialog();
-            }
-
-
+            this.form5 = new Form5();
+            form5.ingameList.Add(this.username.Text);
+            form5.server = this.server;
+            form5.username = this.username.Text;
+            form5.gameid = this.gameid;
+            form5.ShowDialog();
         }
 
         public void ShowDialog4()
         {
-            this.Hide();
+           // this.Hide();
         }
 
         public void CloseForm4()
@@ -392,6 +408,12 @@ namespace WindowsFormsApplication1
         {
             form7.Close();
         }
+
+        public void HideForm7()
+        {
+            form7.Hide();
+        }
+
 
         public void ThingsForm7(string[] parts)
         {

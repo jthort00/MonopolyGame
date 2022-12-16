@@ -58,6 +58,7 @@ namespace WindowsFormsApplication1
             // 
             this.Column2.HeaderText = "In game";
             this.Column2.Name = "Column2";
+            this.Column2.ReadOnly = true;
             // 
             // button1
             // 
